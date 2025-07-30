@@ -1,24 +1,26 @@
 package main
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	"github.com/alvinobarboza/go-ray-gpu/raytracer"
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 func main() {
 	screenWidth := int32(800)
 	screenHeight := int32(450)
 
+	moveSpeed := float32(4)
+	turnSpeed := float32(70.0)
+
 	rl.SetConfigFlags(rl.FlagWindowResizable | rl.FlagMsaa4xHint)
 	rl.InitWindow(screenWidth, screenHeight, "go gpu raytracer - raylib screen texture")
 
-	camera := rl.Camera{
-		Position:   rl.Vector3{X: 0, Y: 0, Z: 0},
-		Target:     rl.Vector3{X: 0, Y: 0, Z: 0},
-		Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
-		Fovy:       45,
-		Projection: rl.CameraPerspective,
-	}
-
 	shader := rl.LoadShader("", "raytrace.fs")
 	defer rl.UnloadShader(shader)
+
+	camera := raytracer.SetupCamera(moveSpeed, turnSpeed, shader)
+	// spheres := raytracer.SetupSpheres(shader)
+	// lights := raytracer.SetupLights(shader)
 
 	res := rl.GetShaderLocation(shader, "res")
 
@@ -27,9 +29,6 @@ func main() {
 		[]float32{float32(screenWidth), float32(screenHeight)},
 		rl.ShaderUniformVec2,
 	)
-
-	// target := rl.LoadRenderTexture(screenWidth, screenHeight)
-	// defer rl.UnloadRenderTexture(target)
 
 	rl.SetTargetFPS(60)
 
@@ -57,7 +56,9 @@ func main() {
 			sChange = false
 		}
 
-		rl.UpdateCamera(&camera, rl.CameraFirstPerson)
+		if camera.UpdateCamera() {
+			camera.UpdateShaderValues(shader)
+		}
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)

@@ -9,14 +9,41 @@ out vec4 finalColor;
 
 // Custom var
 
+struct Light{
+    int     type;
+    float   intensity;
+    vec3    position;
+    vec3    direction;
+};
+
+struct Sphere{
+    vec3    center;
+    float   radius;
+    int     specular;
+    float   reflective;
+	float   opacity;
+	float   refractionIndex;
+};
+
+struct Camera{
+    vec3    rotation;
+    vec3    position;
+    vec3    fov;
+};
+
+#define MAX_LIGHTS 3
+#define MAX_SPHERES 4
+
 uniform vec2 res;
+
+uniform Camera camera;
+uniform Sphere[MAX_SPHERES] spheres;
+uniform Light[MAX_LIGHTS] ligths;
 
 void main()
 {
     finalColor = vec4(
-        (gl_FragCoord.x*gl_FragCoord.y)/(res.x*res.y), 
-        gl_FragCoord.y/res.y, 
-        gl_FragCoord.x/res.x, 
+        abs(camera.position) / 10,
         1.0
     );
 }
