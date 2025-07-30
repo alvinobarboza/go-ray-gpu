@@ -6,9 +6,8 @@ func main() {
 	screenWidth := int32(800)
 	screenHeight := int32(450)
 
+	rl.SetConfigFlags(rl.FlagWindowResizable | rl.FlagMsaa4xHint)
 	rl.InitWindow(screenWidth, screenHeight, "go gpu raytracer - raylib screen texture")
-
-	rl.SetConfigFlags(rl.FlagMsaa4xHint)
 
 	camera := rl.Camera{
 		Position:   rl.Vector3{X: 0, Y: 0, Z: 0},
@@ -21,12 +20,12 @@ func main() {
 	shader := rl.LoadShader("", "raytrace.fs")
 	defer rl.UnloadShader(shader)
 
-	resolution := rl.GetShaderLocation(shader, "resolution")
+	res := rl.GetShaderLocation(shader, "res")
 
 	rl.SetShaderValue(
-		shader, resolution,
+		shader, res,
 		[]float32{float32(screenWidth), float32(screenHeight)},
-		rl.ShaderUniformIvec2,
+		rl.ShaderUniformVec2,
 	)
 
 	// target := rl.LoadRenderTexture(screenWidth, screenHeight)
@@ -34,7 +33,30 @@ func main() {
 
 	rl.SetTargetFPS(60)
 
+	sChange := false
 	for !rl.WindowShouldClose() {
+		sW := int32(rl.GetScreenWidth())
+		sH := int32(rl.GetScreenHeight())
+
+		if sW != screenWidth {
+			screenWidth = sW
+			sChange = true
+		}
+
+		if sH != screenHeight {
+			screenHeight = sH
+			sChange = true
+		}
+
+		if sChange {
+			rl.SetShaderValue(
+				shader, res,
+				[]float32{float32(screenWidth), float32(screenHeight)},
+				rl.ShaderUniformVec2,
+			)
+			sChange = false
+		}
+
 		rl.UpdateCamera(&camera, rl.CameraFirstPerson)
 
 		rl.BeginDrawing()
@@ -44,7 +66,7 @@ func main() {
 		rl.DrawRectangle(0, 0, screenWidth, screenHeight, rl.White)
 		rl.EndShaderMode()
 
-		rl.DrawText("Test shader", screenWidth-100, screenHeight-20, 10, rl.Gray)
+		rl.DrawText("Test shader", screenWidth-140, screenHeight-20, 20, rl.Gray)
 		rl.DrawFPS(10, 10)
 
 		rl.EndDrawing()

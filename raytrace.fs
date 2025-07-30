@@ -9,9 +9,14 @@ out vec4 finalColor;
 
 // Custom var
 
-uniform vec2 resolution;
+uniform vec2 res;
 
 void main()
 {
-    finalColor = vec4(gl_FragCoord.x/resolution.x,gl_FragCoord.x/resolution.x,gl_FragCoord.x/resolution.x,1.0);
+    finalColor = vec4(
+        (gl_FragCoord.x*gl_FragCoord.y)/(res.x*res.y), 
+        gl_FragCoord.y/res.y, 
+        gl_FragCoord.x/res.x, 
+        1.0
+    );
 }
