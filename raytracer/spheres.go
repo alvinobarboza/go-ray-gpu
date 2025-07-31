@@ -74,14 +74,14 @@ func SetupSpheres(shader rl.Shader) []Sphere {
 		},
 	}
 
-	for i, s := range spheres {
-		s.centerLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].center", i))
-		s.radiusLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].radius", i))
-		s.colorLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].color", i))
-		s.specularLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].specular", i))
-		s.reflectiveLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].reflective", i))
-		s.opacityLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].opacity", i))
-		s.refractionIndexLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].refractionIndex", i))
+	for i := range spheres {
+		spheres[i].centerLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].center", i))
+		spheres[i].radiusLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].radius", i))
+		spheres[i].colorLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].color", i))
+		spheres[i].specularLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].specular", i))
+		spheres[i].reflectiveLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].reflective", i))
+		spheres[i].opacityLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].opacity", i))
+		spheres[i].refractionIndexLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].refractionIndex", i))
 	}
 
 	return spheres
