@@ -39,7 +39,7 @@ uniform vec2 res;
 
 uniform Camera camera;
 uniform Sphere[MAX_SPHERES] spheres;
-uniform Light[MAX_LIGHTS] ligths;
+uniform Light[MAX_LIGHTS] lights;
 
 void main()
 {

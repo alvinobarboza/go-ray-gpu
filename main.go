@@ -23,7 +23,8 @@ func main() {
 	spheres := raytracer.SetupSpheres(shader)
 	raytracer.UpdateAllSpheresShaders(spheres, shader)
 
-	// lights := raytracer.SetupLights(shader)
+	lights := raytracer.SetupLights(shader)
+	raytracer.UpdateAllLightsShader(lights, shader)
 
 	res := rl.GetShaderLocation(shader, "res")
 
