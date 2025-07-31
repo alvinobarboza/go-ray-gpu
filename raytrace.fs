@@ -39,6 +39,11 @@ struct Camera{
     vec3    fov;
 };
 
+struct ClosestResult {
+    Sphere  closest_sphere;
+    float   closest_t;
+};
+
 uniform vec2 res;
 
 uniform Camera camera;
@@ -56,7 +61,7 @@ vec2 indexToCoord( vec2 indexCood )
     return indexCood - (res / 2);
 }
 
-vec2 intersectRaySphere(vec3 origin, vec3 direction, Sphere sphere)
+vec2 intersectRaySphere( vec3 origin, vec3 direction, Sphere sphere )
 {
     float radius = sphere.radius;
     vec3 edge = origin - sphere.center;
@@ -78,17 +83,10 @@ vec2 intersectRaySphere(vec3 origin, vec3 direction, Sphere sphere)
     return vec2(t1,t2);
 }
 
-void main()
+ClosestResult closesIntersection( float t_min, float t_max,vec3 direction )
 {
-    vec2 index = indexToCoord(gl_FragCoord.xy);
-    vec3 direction = canvasToView(index);
-    direction = (camera.rotation * vec4(direction, 0.0)).xyz;
-
     float closest_t = MAX_INF;
-    Sphere closest_sphere = Sphere(0, 0.0,0.0,0.0, 0.0,vec3(0.0),vec3(0.0));
-
-    float t_min = 1;
-    float t_max = MAX_INF;
+    Sphere closest_sphere;
 
     for(int i = 0; i < MAX_SPHERES; i++)
     {
@@ -102,9 +100,27 @@ void main()
             closest_sphere = spheres[i];
         }
     }
-    if (closest_sphere.radius == 0) {
-        finalColor = vec4(backgroundColor, 1.0);
-        return;
+    return ClosestResult(closest_sphere, closest_t);
+}
+
+vec4 traceRay( vec3 direction, float t_min, float t_max ) 
+{
+    ClosestResult result = closesIntersection(t_min, t_max, direction);
+
+    if (result.closest_sphere.radius == 0) {
+        return vec4(backgroundColor, 1.0);
     }
-    finalColor = vec4(closest_sphere.color,1.0);
+    return vec4(result.closest_sphere.color,1.0);
+}
+
+void main()
+{
+    vec2 index = indexToCoord(gl_FragCoord.xy);
+    vec3 direction = canvasToView(index);
+    direction = (camera.rotation * vec4(direction, 0.0)).xyz;
+    
+    float t_min = 1;
+    float t_max = MAX_INF;
+
+    finalColor = traceRay(direction, t_min, t_max);
 }
