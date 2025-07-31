@@ -34,7 +34,7 @@ struct Sphere{
 };
 
 struct Camera{
-    vec3    rotation;
+    mat4    rotation;
     vec3    position;
     vec3    fov;
 };
@@ -82,6 +82,7 @@ void main()
 {
     vec2 index = indexToCoord(gl_FragCoord.xy);
     vec3 direction = canvasToView(index);
+    direction = (camera.rotation * vec4(direction, 0.0)).xyz;
 
     float closest_t = MAX_INF;
     Sphere closest_sphere = Sphere(0, 0.0,0.0,0.0, 0.0,vec3(0.0),vec3(0.0));

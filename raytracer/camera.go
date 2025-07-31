@@ -1,6 +1,8 @@
 package raytracer
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 type Camera struct {
 	Position    Vec3
@@ -103,9 +105,13 @@ func (c *Camera) UpdateCamera() bool {
 }
 
 func (c *Camera) UpdateShaderValues(shader rl.Shader) {
-	SetVec3Shader(shader, c.rotationLoc, c.Rotation)
 	SetVec3Shader(shader, c.positionLoc, c.Position)
 	SetVec3Shader(shader, c.fovLoc, c.Fov)
+
+	matrix := RotationMatrixXYZ(c.Rotation)
+	glMatrix := MatrixToGlslMatrix(matrix)
+
+	rl.SetShaderValueMatrix(shader, c.rotationLoc, glMatrix)
 }
 
 func (c *Camera) UpdateFov(w, h float32) {

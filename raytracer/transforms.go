@@ -46,23 +46,7 @@ func (v Vec3) MatrixMultiplication(m []float32) Vec3 {
 }
 
 func (v Vec3) RotateXYZ(angle Vec3) Vec3 {
-	cosa := float32(math.Cos(float64(angle.X * -DEG_TO_RAD)))
-	sina := float32(math.Sin(float64(angle.X * -DEG_TO_RAD)))
-
-	cosb := float32(math.Cos(float64(angle.Y * -DEG_TO_RAD)))
-	sinb := float32(math.Sin(float64(angle.Y * -DEG_TO_RAD)))
-
-	cosga := float32(math.Cos(float64(angle.Z * -DEG_TO_RAD)))
-	singa := float32(math.Sin(float64(angle.Z * -DEG_TO_RAD)))
-
-	// Formula for general 3D roation using matrix
-	matrix := []float32{
-		cosb * cosga, sina*sinb*cosga - cosa*singa, cosa*sinb*cosga + sina*singa,
-		cosb * singa, sina*sinb*singa + cosa*cosga, cosa*sinb*singa - sina*cosga,
-		-sinb, sina * cosb, cosa * cosb,
-	}
-
+	matrix := RotationMatrixXYZ(angle)
 	value := v.MatrixMultiplication(matrix)
-
 	return value
 }
