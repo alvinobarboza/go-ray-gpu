@@ -55,3 +55,7 @@ func SetIntShader(shader rl.Shader, pos int32, value int32) {
 		rl.ShaderUniformInt,
 	)
 }
+
+func RGBToShaderVec3Normalized(color rl.Color) Vec3 {
+	return Vec3{X: float32(color.R) / 255, Y: float32(color.G) / 255, Z: float32(color.B) / 255}
+}
