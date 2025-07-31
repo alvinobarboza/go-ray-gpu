@@ -40,9 +40,14 @@ uniform vec2 res;
 uniform Camera camera;
 uniform Sphere[MAX_SPHERES] spheres;
 uniform Light[MAX_LIGHTS] lights;
+vec2 indexToCoord( vec2 indexCood )
+{
+    return indexCood - (res / 2);
+}
 
 void main()
 {
+    vec2 index = indexToCoord(gl_FragCoord.xy);
     finalColor = vec4(
         abs(camera.position) / 10,
         1.0
