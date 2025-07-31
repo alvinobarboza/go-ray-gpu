@@ -56,9 +56,14 @@ func main() {
 		}
 
 		if sChange {
+			w, h := float32(screenWidth), float32(screenHeight)
+
+			camera.UpdateFov(w, h)
+			camera.UpdateShaderValues(shader)
+
 			rl.SetShaderValue(
 				shader, res,
-				[]float32{float32(screenWidth), float32(screenHeight)},
+				[]float32{w, h},
 				rl.ShaderUniformVec2,
 			)
 			sChange = false

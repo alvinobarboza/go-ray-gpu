@@ -108,11 +108,16 @@ func (c *Camera) UpdateShaderValues(shader rl.Shader) {
 	SetVec3Shader(shader, c.fovLoc, c.Fov)
 }
 
-func SetupCamera(moveSpeed, turnSpeed float32, shader rl.Shader) Camera {
+func (c *Camera) UpdateFov(w, h float32) {
+	c.Fov.Y = h / w
+}
+
+func SetupCamera(moveSpeed, turnSpeed float32, shader rl.Shader, w, h float32) Camera {
 	camera := Camera{
 		Position:  Vec3{X: 0, Y: 0, Z: 0},
 		Rotation:  Vec3{X: 0, Y: 0, Z: 0},
 		Direction: Vec3{X: 0, Y: 0, Z: 1},
+		Fov:       Vec3{X: 1, Y: h / w, Z: 1},
 		MoveSpeed: moveSpeed,
 		TurnSpeed: turnSpeed,
 	}
