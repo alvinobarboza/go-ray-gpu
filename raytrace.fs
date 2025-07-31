@@ -40,6 +40,12 @@ uniform vec2 res;
 uniform Camera camera;
 uniform Sphere[MAX_SPHERES] spheres;
 uniform Light[MAX_LIGHTS] lights;
+
+vec3 canvasToView( vec2 coord ) 
+{
+    return vec3(coord.xy * camera.fov.xy / res, camera.fov.z);
+}
+
 vec2 indexToCoord( vec2 indexCood )
 {
     return indexCood - (res / 2);
@@ -48,6 +54,7 @@ vec2 indexToCoord( vec2 indexCood )
 void main()
 {
     vec2 index = indexToCoord(gl_FragCoord.xy);
+    vec3 direction = canvasToView(index);
     finalColor = vec4(
         abs(camera.position) / 10,
         1.0
