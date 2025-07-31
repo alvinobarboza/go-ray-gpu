@@ -1,21 +1,40 @@
 package raytracer
 
 import (
+	"fmt"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Sphere struct {
-	Center          Vec3
-	Radius          float32
-	Color           rl.Color
-	Specular        int32
-	Reflective      float32
-	Opacity         float32
-	RefractionIndex float32
+	Center             Vec3
+	Radius             float32
+	Color              rl.Color
+	Specular           int32
+	Reflective         float32
+	Opacity            float32
+	RefractionIndex    float32
+	centerLoc          int32
+	radiusLoc          int32
+	colorLoc           int32
+	specularLoc        int32
+	reflectiveLoc      int32
+	opacityLoc         int32
+	refractionIndexLoc int32
+}
+
+func (s Sphere) UpdateShaderValues(shader rl.Shader) {
+	SetVec3Shader(shader, s.centerLoc, s.Center)
+	SetFloatShader(shader, s.radiusLoc, s.Radius)
+	SetVec3Shader(shader, s.colorLoc, RGBToShaderVec3Normalized(s.Color))
+	SetIntShader(shader, s.specularLoc, s.Specular)
+	SetFloatShader(shader, s.reflectiveLoc, s.Reflective)
+	SetFloatShader(shader, s.opacityLoc, s.Opacity)
+	SetFloatShader(shader, s.refractionIndexLoc, s.RefractionIndex)
 }
 
 func SetupSpheres(shader rl.Shader) []Sphere {
-	return []Sphere{
+	spheres := []Sphere{
 		{
 			Center:     Vec3{X: 0, Y: -1, Z: 3},
 			Radius:     1,
@@ -53,5 +72,23 @@ func SetupSpheres(shader rl.Shader) []Sphere {
 			Specular:   200,
 			Reflective: 0.1,
 		},
+	}
+
+	for i, s := range spheres {
+		s.centerLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].center", i))
+		s.radiusLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].radius", i))
+		s.colorLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].color", i))
+		s.specularLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].specular", i))
+		s.reflectiveLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].reflective", i))
+		s.opacityLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].opacity", i))
+		s.refractionIndexLoc = rl.GetShaderLocation(shader, fmt.Sprintf("spheres[%d].refractionIndex", i))
+	}
+
+	return spheres
+}
+
+func UpdateAllSpheresShaders(spheres []Sphere, shader rl.Shader) {
+	for _, s := range spheres {
+		s.UpdateShaderValues(shader)
 	}
 }

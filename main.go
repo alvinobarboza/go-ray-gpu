@@ -19,7 +19,10 @@ func main() {
 	defer rl.UnloadShader(shader)
 
 	camera := raytracer.SetupCamera(moveSpeed, turnSpeed, shader)
-	// spheres := raytracer.SetupSpheres(shader)
+
+	spheres := raytracer.SetupSpheres(shader)
+	raytracer.UpdateAllSpheresShaders(spheres, shader)
+
 	// lights := raytracer.SetupLights(shader)
 
 	res := rl.GetShaderLocation(shader, "res")

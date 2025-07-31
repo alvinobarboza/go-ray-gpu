@@ -19,6 +19,7 @@ struct Light{
 struct Sphere{
     vec3    center;
     float   radius;
+    vec3    color;
     int     specular;
     float   reflective;
 	float   opacity;
@@ -32,7 +33,7 @@ struct Camera{
 };
 
 #define MAX_LIGHTS 3
-#define MAX_SPHERES 4
+#define MAX_SPHERES 5
 
 uniform vec2 res;
 
