@@ -15,6 +15,7 @@ out vec4 finalColor;
 #define TAU             2 * PI
 #define DEG_TO_RAD      TAU / 360
 #define MAX_INF         1000000
+#define MAX_BOUNCES     6
 
 #define L_AMBIENT       0
 #define L_POINT         1
@@ -54,6 +55,12 @@ struct RayHitResult {
     vec3 point;
     vec3 normal;
     vec3 objToCam;
+};
+
+struct ReflectedResult {
+    vec3 color;
+    vec3 refColor;
+    float r;
 };
 
 uniform vec2 res;
@@ -222,19 +229,44 @@ void main()
     float t_max = MAX_INF;
 
     vec3 colorAcc = vec3(0.0);
+    RayHitResult ray = traceRay(camera.position, direction, t_min, t_max);
+    colorAcc = ray.color;
 
-    for ( int i = 0; i < maxBounces; i++ ){
-        RayHitResult ray = traceRay(camera.position, direction, t_min, t_max);
-        if ( ray.hit.radius <= 0.0 || ray.hit.reflective <= 0.0 ) {
-            colorAcc = ray.color;
-            break;
-        } 
+    if ( ray.hit.reflective > 0.0 ) {
+        // ReflectedResult ref[MAX_BOUNCES];
+        vec3 colorsList[MAX_BOUNCES];
+        for ( int i = 0; i < maxBounces; i++ ){
+            float r = ray.hit.reflective;
+            vec3 reflected = reflectRay(ray.objToCam, ray.normal);
+            RayHitResult rayFlected = traceRay(ray.point, reflected, 0.001, t_max);
 
-        float r = ray.hit.reflective;
-        vec3 reflected = reflectRay(ray.objToCam, ray.normal);
-        RayHitResult rayFlected = traceRay(ray.point, reflected, 0.001, t_max);
+            colorsList[i] = ray.color * (1.0-r) + rayFlected.color * r;
 
-        colorAcc = ray.color * (1.0-r) + rayFlected.color * r;
+            // ref[i] = ReflectedResult(
+            //     ray.color,
+            //     rayFlected.color,
+            //     r
+            // );
+            
+
+            if ( rayFlected.hit.radius <= 0.0 || rayFlected.hit.reflective <= 0.0 ) {
+                break;
+            } 
+
+            ray = rayFlected;
+        }
+
+        vec3 sum = vec3(0.0);
+        for (int i = maxBounces-1; i >= 0; i--) {
+            sum = (sum * colorsList[i]) + colorsList[i];
+        }
+        colorAcc = sum;
+    } 
+
+    if (colorAcc.r > 1 || colorAcc.g > 1 ||colorAcc.b > 1 || 
+        colorAcc.r < 0 || colorAcc.g < 0 ||colorAcc.b < 0) {
+        finalColor = vec4(0.0,0.0,0.0,1.0);
+        return;
     }
 
     finalColor = vec4(colorAcc, 1.0);

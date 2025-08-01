@@ -7,6 +7,9 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+// Same as in shader
+const MaxBounces = int32(6)
+
 func main() {
 	maxBounces := int32(3)
 
