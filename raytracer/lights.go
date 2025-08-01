@@ -50,11 +50,11 @@ func SetupLights(shader rl.Shader) []Lights {
 		},
 	}
 
-	for i, l := range lights {
-		l.typeLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].type", i))
-		l.intensityLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].intensity", i))
-		l.directionLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].direction", i))
-		l.positionLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].position", i))
+	for i := range lights {
+		lights[i].typeLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].type", i))
+		lights[i].intensityLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].intensity", i))
+		lights[i].directionLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].direction", i))
+		lights[i].positionLoc = rl.GetShaderLocation(shader, fmt.Sprintf("lights[%d].position", i))
 	}
 
 	return lights
