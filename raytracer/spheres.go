@@ -40,7 +40,7 @@ func SetupSpheres(shader rl.Shader) []Sphere {
 			Radius:     1,
 			Color:      rl.Red,
 			Specular:   500,
-			Reflective: 0.2,
+			Reflective: 0.9,
 		},
 		{
 			Center:     Vec3{X: 2, Y: 0, Z: 4},
@@ -61,7 +61,7 @@ func SetupSpheres(shader rl.Shader) []Sphere {
 			Radius:          .4,
 			Color:           rl.Blue,
 			Specular:        200,
-			Reflective:      0.2,
+			Reflective:      0.9,
 			Opacity:         0.9,
 			RefractionIndex: 1.33,
 		},

@@ -8,7 +8,9 @@ import (
 )
 
 func main() {
-	screenWidth := int32(1000)
+	maxBounces := int32(3)
+
+	screenWidth := int32(1600)
 	screenHeight := int32(1000)
 
 	moveSpeed := float32(4)
@@ -43,7 +45,10 @@ func main() {
 	bgColorLoc := rl.GetShaderLocation(shader, "backgroundColor")
 	raytracer.SetVec3Shader(shader, bgColorLoc, raytracer.RGBToShaderVec3Normalized(rl.Gray))
 
-	rl.SetTargetFPS(60)
+	bouncesLoc := rl.GetShaderLocation(shader, "maxBounces")
+	raytracer.SetIntShader(shader, bouncesLoc, maxBounces)
+
+	rl.SetTargetFPS(200)
 
 	sChange := false
 	for !rl.WindowShouldClose() {
@@ -78,6 +83,21 @@ func main() {
 			camera.UpdateShaderValues(shader)
 		}
 
+		if rl.IsKeyReleased(rl.KeyQ) {
+			maxBounces--
+			if maxBounces < 2 {
+				maxBounces = 2
+			}
+			raytracer.SetIntShader(shader, bouncesLoc, maxBounces)
+		}
+		if rl.IsKeyReleased(rl.KeyE) {
+			maxBounces++
+			if maxBounces > 6 {
+				maxBounces = 6
+			}
+			raytracer.SetIntShader(shader, bouncesLoc, maxBounces)
+		}
+
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 
@@ -87,17 +107,20 @@ func main() {
 
 		rl.DrawText("Test shader", screenWidth-140, screenHeight-20, 20, rl.Gray)
 
-		rl.DrawRectangle(2, 2, 445, 195, rl.Fade(rl.DarkGray, 0.6))
-		rl.DrawRectangleLines(2, 2, 445, 195, rl.Gray)
+		rl.DrawRectangle(2, 2, 445, 215, rl.Fade(rl.DarkGray, 0.6))
+		rl.DrawRectangleLines(2, 2, 445, 215, rl.Gray)
 
 		rl.DrawFPS(10, 10)
 		rl.DrawText(
-			fmt.Sprintf("Cam-> \nX:%01f \nY:%01f \nZ:%01f", camera.Position.X, camera.Position.Y, camera.Position.Z),
+			fmt.Sprintf("Light bounce count:%01d", maxBounces),
 			10, 30, 20, rl.White)
+		rl.DrawText(
+			fmt.Sprintf("Cam-> \nX:%01f \nY:%01f \nZ:%01f", camera.Position.X, camera.Position.Y, camera.Position.Z),
+			10, 50, 20, rl.White)
 		rl.DrawText("Move: A/W/S/D\nControl Camera: UP/DOWN/LEFT/RIGHT",
-			10, 120, 20, rl.White)
+			10, 140, 20, rl.White)
 		rl.DrawText("I'm a bit too lazy to make \nit work with the mouse...",
-			10, 160, 10, rl.White)
+			10, 180, 10, rl.White)
 
 		rl.EndDrawing()
 	}
