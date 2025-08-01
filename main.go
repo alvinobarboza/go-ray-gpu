@@ -1,13 +1,15 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/alvinobarboza/go-ray-gpu/raytracer"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
-	screenWidth := int32(800)
-	screenHeight := int32(450)
+	screenWidth := int32(1000)
+	screenHeight := int32(1000)
 
 	moveSpeed := float32(4)
 	turnSpeed := float32(70.0)
@@ -84,7 +86,18 @@ func main() {
 		rl.EndShaderMode()
 
 		rl.DrawText("Test shader", screenWidth-140, screenHeight-20, 20, rl.Gray)
+
+		rl.DrawRectangle(2, 2, 445, 195, rl.Fade(rl.DarkGray, 0.6))
+		rl.DrawRectangleLines(2, 2, 445, 195, rl.Gray)
+
 		rl.DrawFPS(10, 10)
+		rl.DrawText(
+			fmt.Sprintf("Cam-> \nX:%01f \nY:%01f \nZ:%01f", camera.Position.X, camera.Position.Y, camera.Position.Z),
+			10, 30, 20, rl.White)
+		rl.DrawText("Move: A/W/S/D\nControl Camera: UP/DOWN/LEFT/RIGHT",
+			10, 120, 20, rl.White)
+		rl.DrawText("I'm a bit too lazy to make \nit work with the mouse...",
+			10, 160, 10, rl.White)
 
 		rl.EndDrawing()
 	}
