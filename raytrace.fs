@@ -86,7 +86,7 @@ vec2 intersectRaySphere( vec3 origin, vec3 direction, Sphere sphere )
 ClosestResult closesIntersection( float t_min, float t_max,vec3 direction )
 {
     float closest_t = MAX_INF;
-    Sphere closest_sphere;
+    Sphere closest_sphere = Sphere(0, 0.0, 0.0, 0.0, 0.0, vec3(0.0), vec3(0.0));
 
     for(int i = 0; i < MAX_SPHERES; i++)
     {
