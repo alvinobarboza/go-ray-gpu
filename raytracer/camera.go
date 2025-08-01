@@ -120,8 +120,8 @@ func (c *Camera) UpdateFov(w, h float32) {
 
 func SetupCamera(moveSpeed, turnSpeed float32, shader rl.Shader, w, h float32) Camera {
 	camera := Camera{
-		Position:  Vec3{X: 0, Y: 0, Z: 0},
-		Rotation:  Vec3{X: 0, Y: 0, Z: 0},
+		Position:  Vec3{X: 3.7, Y: 0, Z: 0.4},
+		Rotation:  Vec3{X: -5, Y: 55, Z: 0},
 		Direction: Vec3{X: 0, Y: 0, Z: 1},
 		Fov:       Vec3{X: 1, Y: h / w, Z: 1},
 		MoveSpeed: moveSpeed,
