@@ -39,7 +39,7 @@ func main() {
 	)
 
 	bgColorLoc := rl.GetShaderLocation(shader, "backgroundColor")
-	raytracer.SetVec3Shader(shader, bgColorLoc, raytracer.RGBToShaderVec3Normalized(rl.White))
+	raytracer.SetVec3Shader(shader, bgColorLoc, raytracer.RGBToShaderVec3Normalized(rl.Gray))
 
 	rl.SetTargetFPS(60)
 

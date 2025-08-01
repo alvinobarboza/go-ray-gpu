@@ -9,12 +9,16 @@ out vec4 finalColor;
 
 // Custom var
 
-#define MAX_LIGHTS 3
-#define MAX_SPHERES 5
-#define PI 3.1415926535897932384626433832795
-#define TAU 2 * PI
-#define DEG_TO_RAD TAU / 360
-#define MAX_INF 1000000
+#define MAX_LIGHTS      3
+#define MAX_SPHERES     5
+#define PI              3.1415926535897932384626433832795
+#define TAU             2 * PI
+#define DEG_TO_RAD      TAU / 360
+#define MAX_INF         1000000
+
+#define L_AMBIENT       0
+#define L_POINT         1
+#define L_DIRECTIONAL   2
 
 struct Light{
     int     type;
@@ -83,14 +87,14 @@ vec2 intersectRaySphere( vec3 origin, vec3 direction, Sphere sphere )
     return vec2(t1,t2);
 }
 
-ClosestResult closesIntersection( float t_min, float t_max,vec3 direction )
+ClosestResult closesIntersection( vec3 origin, vec3 direction, float t_min, float t_max )
 {
     float closest_t = MAX_INF;
     Sphere closest_sphere = Sphere(0, 0.0, 0.0, 0.0, 0.0, vec3(0.0), vec3(0.0));
 
     for(int i = 0; i < MAX_SPHERES; i++)
     {
-        vec2 t = intersectRaySphere(camera.position, direction, spheres[i]);
+        vec2 t = intersectRaySphere(origin, direction, spheres[i]);
         if ( t.x < closest_t && t_min < t.x && t.x < t_max ) {
             closest_t = t.x;
             closest_sphere = spheres[i];
@@ -103,14 +107,78 @@ ClosestResult closesIntersection( float t_min, float t_max,vec3 direction )
     return ClosestResult(closest_sphere, closest_t);
 }
 
-vec4 traceRay( vec3 direction, float t_min, float t_max ) 
+vec3 reflectRay( vec3 ray, vec3 normal )
 {
-    ClosestResult result = closesIntersection(t_min, t_max, direction);
+    float r_dot_n = dot(ray, normal);
+    return 2*normal*r_dot_n - ray;
+}
+
+float computeLight( vec3 point, vec3 normal, vec3 objToCam, int specular  )
+{
+    float intensity = 0;
+
+    for (int i = 0; i < MAX_LIGHTS; i++) {
+        if (lights[i].type == L_AMBIENT) {
+			intensity += lights[i].intensity;
+            continue;
+		} 
+
+        vec3 L = vec3(0.0);
+        if (lights[i].type == L_POINT ){
+            L = lights[i].position - point;
+        } else {
+            L = lights[i].direction;
+        }
+
+        // Shadow
+        ClosestResult shadow = closesIntersection(point, L, 0.001, MAX_INF);
+        if (shadow.closest_sphere.radius > 0.0 ){
+            continue;
+        }
+
+        // Deffuse
+        float n_dot_l = dot(normal, L);
+        if (n_dot_l > 0 ){
+            float length_normal = length(normal);
+            float length_L = length(L);
+            intensity += lights[i].intensity * n_dot_l / (length_normal * length_L);
+        }
+
+        // Specular
+        if (specular > 0 ){
+            vec3 reflected = reflectRay(L, normal);
+            float r_dot_oc = dot(reflected, objToCam);
+            if (r_dot_oc > 0.0 ){
+                float length_reflected = length(reflected);
+                float length_objToCam = length(objToCam);
+                intensity += lights[i].intensity * pow(r_dot_oc/(length_reflected*length_objToCam), float(specular));
+            }
+        }		
+    }
+
+    if (intensity > 1.0) {
+		intensity = 1.0;
+	}
+
+    return intensity;
+}
+
+vec4 traceRay( vec3 ray, float t_min, float t_max ) 
+{
+    ClosestResult result = closesIntersection(camera.position, ray, t_min, t_max);
 
     if (result.closest_sphere.radius == 0) {
         return vec4(backgroundColor, 1.0);
     }
-    return vec4(result.closest_sphere.color,1.0);
+
+    vec3 point = camera.position + result.closest_t*ray;
+    vec3 normal = normalize(point - result.closest_sphere.center);
+    vec3 objToCam = ray * -1;
+
+    float lightIntensity = computeLight(point, normal, objToCam, result.closest_sphere.specular);
+    vec3 localColor = result.closest_sphere.color * lightIntensity;
+
+    return vec4(localColor,1.0);
 }
 
 void main()
