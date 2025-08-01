@@ -31,8 +31,8 @@ struct Sphere{
     int     specular;
     float   radius;
     float   reflective;
-	float   opacity;
-	float   refractionIndex;
+    float   opacity;
+    float   refractionIndex;
     vec3    center;
     vec3    color;
 };
@@ -48,12 +48,21 @@ struct ClosestResult {
     float   closest_t;
 };
 
+struct RayHitResult {
+    Sphere hit;
+    vec3 color;
+    vec3 point;
+    vec3 normal;
+    vec3 objToCam;
+};
+
 uniform vec2 res;
 
 uniform Camera camera;
 uniform Sphere spheres[MAX_SPHERES];
 uniform Light lights[MAX_LIGHTS];
 uniform vec3 backgroundColor;
+uniform int maxBounces;
 
 vec3 canvasToView( vec2 coord ) 
 {
@@ -163,22 +172,44 @@ float computeLight( vec3 point, vec3 normal, vec3 objToCam, int specular  )
     return intensity;
 }
 
-vec4 traceRay( vec3 ray, float t_min, float t_max ) 
+float rayAngleFromNormal( vec3 ray, vec3 normal)
 {
-    ClosestResult result = closesIntersection(camera.position, ray, t_min, t_max);
+    float r_dot_n = dot(ray, normal);
+    float lenRay = length(ray);
+    float lenNormal = length(normal);
+
+    float angleRay = acos(r_dot_n/(lenRay*lenNormal));
+    return angleRay;
+}
+
+RayHitResult traceRay( vec3 origin, vec3 ray, float t_min, float t_max ) 
+{
+    ClosestResult result = closesIntersection(origin, ray, t_min, t_max);
 
     if (result.closest_sphere.radius == 0) {
-        return vec4(backgroundColor, 1.0);
+        return RayHitResult(
+            result.closest_sphere,
+            backgroundColor, 
+            vec3(0.0),
+            vec3(0.0),
+            vec3(0.0)
+        );
     }
 
-    vec3 point = camera.position + result.closest_t*ray;
+    vec3 point = origin + result.closest_t*ray;
     vec3 normal = normalize(point - result.closest_sphere.center);
     vec3 objToCam = ray * -1;
 
     float lightIntensity = computeLight(point, normal, objToCam, result.closest_sphere.specular);
     vec3 localColor = result.closest_sphere.color * lightIntensity;
 
-    return vec4(localColor,1.0);
+    return RayHitResult(
+        result.closest_sphere,
+        localColor,
+        point,
+        normal,
+        objToCam
+    );
 }
 
 void main()
@@ -190,5 +221,21 @@ void main()
     float t_min = 1;
     float t_max = MAX_INF;
 
-    finalColor = traceRay(direction, t_min, t_max);
+    vec3 colorAcc = vec3(0.0);
+
+    for ( int i = 0; i < maxBounces; i++ ){
+        RayHitResult ray = traceRay(camera.position, direction, t_min, t_max);
+        if ( ray.hit.radius <= 0.0 || ray.hit.reflective <= 0.0 ) {
+            colorAcc = ray.color;
+            break;
+        } 
+
+        float r = ray.hit.reflective;
+        vec3 reflected = reflectRay(ray.objToCam, ray.normal);
+        RayHitResult rayFlected = traceRay(ray.point, reflected, 0.001, t_max);
+
+        colorAcc = ray.color * (1.0-r) + rayFlected.color * r;
+    }
+
+    finalColor = vec4(colorAcc, 1.0);
 }
