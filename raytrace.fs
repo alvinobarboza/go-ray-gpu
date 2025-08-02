@@ -233,40 +233,36 @@ void main()
     colorAcc = ray.color;
 
     if ( ray.hit.reflective > 0.0 ) {
-        // ReflectedResult ref[MAX_BOUNCES];
-        vec3 colorsList[MAX_BOUNCES];
+        ReflectedResult ref[MAX_BOUNCES];
         for ( int i = 0; i < maxBounces; i++ ){
             float r = ray.hit.reflective;
             vec3 reflected = reflectRay(ray.objToCam, ray.normal);
-            RayHitResult rayFlected = traceRay(ray.point, reflected, 0.001, t_max);
-
-            colorsList[i] = ray.color * (1.0-r) + rayFlected.color * r;
-
-            // ref[i] = ReflectedResult(
-            //     ray.color,
-            //     rayFlected.color,
-            //     r
-            // );
             
+            RayHitResult rayFlected = traceRay(
+                ray.point, reflected, 0.001, t_max);
 
-            if ( rayFlected.hit.radius <= 0.0 || rayFlected.hit.reflective <= 0.0 ) {
+            ref[i] = ReflectedResult(
+                ray.color,
+                rayFlected.color,
+                r
+            );
+            
+            if ( rayFlected.hit.radius <= 0.0 || 
+                rayFlected.hit.reflective <= 0.0 ) {
                 break;
             } 
-
             ray = rayFlected;
         }
 
         vec3 sum = vec3(0.0);
-        for (int i = maxBounces-1; i >= 0; i--) {
-            sum = (sum * colorsList[i]) + colorsList[i];
+        for (int i = ref.length()-1; i >= 0; i--) {
+            if (ref.length()-1 == i) {
+                sum = ref[i].color * (1.0-ref[i].r) + ref[i].refColor * ref[i].r;
+                continue;
+            }
+            sum = ref[i].color * (1.0-ref[i].r) + sum * ref[i].r;
         }
         colorAcc = sum;
-    } 
-
-    if (colorAcc.r > 1 || colorAcc.g > 1 ||colorAcc.b > 1 || 
-        colorAcc.r < 0 || colorAcc.g < 0 ||colorAcc.b < 0) {
-        finalColor = vec4(0.0,0.0,0.0,1.0);
-        return;
     }
 
     finalColor = vec4(colorAcc, 1.0);
