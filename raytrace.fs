@@ -325,15 +325,15 @@ void main()
 
     vec3 colorAcc = vec3(0.0);
     RayHitResult ray = traceRay(camera.position, direction, t_min, t_max);
-    colorAcc = ray.color;
 
     if ( ray.hit.opacity > 0.0 ) {
-        colorAcc = calculateRefraction(ray, direction, t_min, t_max);
+        ray.color = calculateRefraction(ray, direction, t_min, t_max);
     }
 
-    // if ( ray.hit.reflective > 0.0 ) {
-    //     colorAcc = calculateReflection(ray, t_min, t_max);
-    // }
+    if ( ray.hit.reflective > 0.0 ) {
+        ray.color = calculateReflection(ray, t_min, t_max);
+    }
 
+    colorAcc = ray.color;
     finalColor = vec4(colorAcc, 1.0);
 }
