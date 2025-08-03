@@ -17,7 +17,7 @@ func main() {
 	screenHeight := int32(1000)
 
 	moveSpeed := float32(4)
-	turnSpeed := float32(70.0)
+	turnSpeed := float32(25.0)
 
 	rl.SetConfigFlags(rl.FlagWindowResizable | rl.FlagMsaa4xHint)
 	rl.InitWindow(screenWidth, screenHeight, "go gpu raytracer - raylib screen texture")
@@ -110,20 +110,20 @@ func main() {
 
 		rl.DrawText("Test shader", screenWidth-140, screenHeight-20, 20, rl.Gray)
 
-		rl.DrawRectangle(2, 2, 445, 215, rl.Fade(rl.DarkGray, 0.6))
-		rl.DrawRectangleLines(2, 2, 445, 215, rl.Gray)
+		rl.DrawRectangle(2, 2, 305, 230, rl.Fade(rl.DarkGray, 0.6))
+		rl.DrawRectangleLines(2, 2, 305, 230, rl.Gray)
 
 		rl.DrawFPS(10, 10)
 		rl.DrawText(
-			fmt.Sprintf("Light bounce count:%01d", maxBounces),
+			fmt.Sprintf("Light bounce count: %01d E+/Q-", maxBounces),
 			10, 30, 20, rl.White)
 		rl.DrawText(
-			fmt.Sprintf("Cam-> \nX:%01f \nY:%01f \nZ:%01f", camera.Position.X, camera.Position.Y, camera.Position.Z),
+			fmt.Sprintf("Cam: \nX:%01f \nY:%01f \nZ:%01f", camera.Position.X, camera.Position.Y, camera.Position.Z),
 			10, 50, 20, rl.White)
-		rl.DrawText("Move: A/W/S/D\nControl Camera: UP/DOWN/LEFT/RIGHT",
+		rl.DrawText("Move: A/W/S/D",
 			10, 140, 20, rl.White)
-		rl.DrawText("I'm a bit too lazy to make \nit work with the mouse...",
-			10, 180, 10, rl.White)
+		rl.DrawText("Mouse view moviment: \nL Click: Lock view\nR Click: Unlock",
+			10, 162, 20, rl.White)
 
 		rl.EndDrawing()
 	}

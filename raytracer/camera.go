@@ -11,6 +11,7 @@ type Camera struct {
 	Fov         Vec3
 	MoveSpeed   float32
 	TurnSpeed   float32
+	mouseLock   bool
 	rotationLoc int32
 	positionLoc int32
 	fovLoc      int32
@@ -79,27 +80,32 @@ func (c *Camera) UpdateCamera() bool {
 		updated = true
 	}
 
-	if rl.IsKeyDown(rl.KeyRight) {
-		c.Rotation.Y -= c.TurnSpeed * rl.GetFrameTime()
-		updated = true
+	if rl.IsMouseButtonDown(rl.MouseButtonLeft) && !c.mouseLock {
+		rl.DisableCursor()
+		c.mouseLock = true
 	}
-	if rl.IsKeyDown(rl.KeyLeft) {
-		c.Rotation.Y += c.TurnSpeed * rl.GetFrameTime()
-		updated = true
+
+	if rl.IsMouseButtonDown(rl.MouseButtonRight) && c.mouseLock {
+		rl.EnableCursor()
+		c.mouseLock = false
 	}
-	if rl.IsKeyDown(rl.KeyUp) {
-		c.Rotation.X += c.TurnSpeed * rl.GetFrameTime()
-		if c.Rotation.X >= 90 {
-			c.Rotation.X = 89
+
+	if c.mouseLock {
+		mouse := rl.GetMouseDelta()
+		if mouse.X != 0 || mouse.Y != 0 {
+			c.Rotation.Y -= c.TurnSpeed * rl.GetFrameTime() * mouse.X
+			c.Rotation.X -= c.TurnSpeed * rl.GetFrameTime() * mouse.Y
+
+			if c.Rotation.X >= 90 {
+				c.Rotation.X = 89
+			}
+			if c.Rotation.X <= -90 {
+				c.Rotation.X = -89
+			}
+
+			updated = true
+
 		}
-		updated = true
-	}
-	if rl.IsKeyDown(rl.KeyDown) && c.Rotation.X < 90 {
-		c.Rotation.X -= c.TurnSpeed * rl.GetFrameTime()
-		if c.Rotation.X <= -90 {
-			c.Rotation.X = -89
-		}
-		updated = true
 	}
 	return updated
 }
