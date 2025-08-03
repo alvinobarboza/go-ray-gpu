@@ -219,6 +219,43 @@ RayHitResult traceRay( vec3 origin, vec3 ray, float t_min, float t_max )
     );
 }
 
+vec3 calculateReflection( RayHitResult ray, float t_min, float t_max )
+{
+    vec3 colorAcc = vec3(0.0);
+    ReflectedResult ref[MAX_BOUNCES];
+    int countRays = 0; // Since array is initialized early, don't overshoot on less bounces
+    for ( int i = 0; i < maxBounces; i++ ){
+        float r = ray.hit.reflective;
+        vec3 reflected = reflectRay(ray.objToCam, ray.normal);
+        
+        RayHitResult rayFlected = traceRay(
+            ray.point, reflected, 0.001, t_max);
+
+        ref[i] = ReflectedResult(
+            ray.color,
+            rayFlected.color,
+            r
+        );
+        
+        countRays++;
+
+        if ( rayFlected.hit.radius <= 0.0 || 
+            rayFlected.hit.reflective <= 0.0 ) {
+            break;
+        } 
+        ray = rayFlected;
+    }
+
+    for (int i = countRays-1; i >= 0; i--) {
+        if (countRays-1 == i) {
+            colorAcc = ref[i].color * (1.0-ref[i].r) + ref[i].refColor * ref[i].r;
+            continue;
+        }
+        colorAcc = ref[i].color * (1.0-ref[i].r) + colorAcc * ref[i].r;
+    }
+    return colorAcc;
+}
+
 void main()
 {
     vec2 index = indexToCoord(gl_FragCoord.xy);
@@ -233,36 +270,7 @@ void main()
     colorAcc = ray.color;
 
     if ( ray.hit.reflective > 0.0 ) {
-        ReflectedResult ref[MAX_BOUNCES];
-        for ( int i = 0; i < maxBounces; i++ ){
-            float r = ray.hit.reflective;
-            vec3 reflected = reflectRay(ray.objToCam, ray.normal);
-            
-            RayHitResult rayFlected = traceRay(
-                ray.point, reflected, 0.001, t_max);
-
-            ref[i] = ReflectedResult(
-                ray.color,
-                rayFlected.color,
-                r
-            );
-            
-            if ( rayFlected.hit.radius <= 0.0 || 
-                rayFlected.hit.reflective <= 0.0 ) {
-                break;
-            } 
-            ray = rayFlected;
-        }
-
-        vec3 sum = vec3(0.0);
-        for (int i = ref.length()-1; i >= 0; i--) {
-            if (ref.length()-1 == i) {
-                sum = ref[i].color * (1.0-ref[i].r) + ref[i].refColor * ref[i].r;
-                continue;
-            }
-            sum = ref[i].color * (1.0-ref[i].r) + sum * ref[i].r;
-        }
-        colorAcc = sum;
+        colorAcc = calculateReflection(ray, t_min, t_max);
     }
 
     finalColor = vec4(colorAcc, 1.0);
