@@ -115,7 +115,7 @@ func (c *Camera) UpdateShaderValues(shader rl.Shader) {
 }
 
 func (c *Camera) UpdateFov(w, h float32) {
-	c.Fov.Y = h / w
+	c.Fov.X = w / h
 }
 
 func SetupCamera(moveSpeed, turnSpeed float32, shader rl.Shader, w, h float32) Camera {
@@ -123,7 +123,7 @@ func SetupCamera(moveSpeed, turnSpeed float32, shader rl.Shader, w, h float32) C
 		Position:  Vec3{X: 0, Y: 0, Z: 0},
 		Rotation:  Vec3{X: 0, Y: 0, Z: 0},
 		Direction: Vec3{X: 0, Y: 0, Z: 1},
-		Fov:       Vec3{X: 1, Y: h / w, Z: 1},
+		Fov:       Vec3{X: w / h, Y: 1, Z: 1},
 		MoveSpeed: moveSpeed,
 		TurnSpeed: turnSpeed,
 	}
