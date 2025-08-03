@@ -57,7 +57,7 @@ struct RayHitResult {
     vec3 objToCam;
 };
 
-struct ReflectedResult {
+struct RefResult {
     vec3 color;
     vec3 refColor;
     float r;
@@ -179,6 +179,8 @@ float computeLight( vec3 point, vec3 normal, vec3 objToCam, int specular  )
     return intensity;
 }
 
+// Find angle between two vectors
+// angle = acos(angle) = (u dot v) / (length u * length v)
 float rayAngleFromNormal( vec3 ray, vec3 normal)
 {
     float r_dot_n = dot(ray, normal);
@@ -187,6 +189,24 @@ float rayAngleFromNormal( vec3 ray, vec3 normal)
 
     float angleRay = acos(r_dot_n/(lenRay*lenNormal));
     return angleRay;
+}
+
+// Formula for rotation around a arbtrary orthognal vector(both vector must be normalized)
+// u = ortho vector = cross product of ray and normal
+// x = vector to rotate = ray
+// angle = radian
+// newx = u * (u dot x) + cos(angle) * (u cross x) cross u + sin(angle)*(u cross x)
+vec3 refractRay( vec3 ray, vec3 normal, float angleRay, float refractionIndex )
+{
+    float angleIndex = asin(sin(angleRay)/refractionIndex);
+    vec3 crossRayNormal = normalize(cross(normal, ray));
+    vec3 crossRayCross = cross(crossRayNormal, ray);
+
+    vec3 c1 = crossRayNormal * dot(crossRayNormal, ray);
+    vec3 c2 = cross(crossRayCross * cos(angleIndex), crossRayNormal);
+    vec3 c3 = crossRayCross * sin(angleIndex);
+
+    return normalize(c1+c2+c3);
 }
 
 RayHitResult traceRay( vec3 origin, vec3 ray, float t_min, float t_max ) 
@@ -222,7 +242,7 @@ RayHitResult traceRay( vec3 origin, vec3 ray, float t_min, float t_max )
 vec3 calculateReflection( RayHitResult ray, float t_min, float t_max )
 {
     vec3 colorAcc = vec3(0.0);
-    ReflectedResult ref[MAX_BOUNCES];
+    RefResult ref[MAX_BOUNCES];
     int countRays = 0; // Since array is initialized early, don't overshoot on less bounces
     for ( int i = 0; i < maxBounces; i++ ){
         float r = ray.hit.reflective;
@@ -231,7 +251,7 @@ vec3 calculateReflection( RayHitResult ray, float t_min, float t_max )
         RayHitResult rayFlected = traceRay(
             ray.point, reflected, 0.001, t_max);
 
-        ref[i] = ReflectedResult(
+        ref[i] = RefResult(
             ray.color,
             rayFlected.color,
             r
@@ -244,6 +264,44 @@ vec3 calculateReflection( RayHitResult ray, float t_min, float t_max )
             break;
         } 
         ray = rayFlected;
+    }
+
+    for (int i = countRays-1; i >= 0; i--) {
+        if (countRays-1 == i) {
+            colorAcc = ref[i].color * (1.0-ref[i].r) + ref[i].refColor * ref[i].r;
+            continue;
+        }
+        colorAcc = ref[i].color * (1.0-ref[i].r) + colorAcc * ref[i].r;
+    }
+    return colorAcc;
+}
+
+vec3 calculateRefraction( RayHitResult hit, vec3 ray, float t_min, float t_max )
+{
+    vec3 colorAcc = vec3(0.0);
+    RefResult ref[MAX_BOUNCES];
+    int countRays = 0; // Since array is initialized early, don't overshoot on less bounces
+    for ( int i = 0; i < maxBounces; i++ ){
+        float o = hit.hit.opacity;
+        float angleRay = rayAngleFromNormal(ray, hit.normal);
+		vec3 refracted = refractRay(ray, hit.normal, angleRay, hit.hit.refractionIndex);
+        
+        RayHitResult rayFracted = traceRay(
+            hit.point, refracted, 0.001, t_max);
+
+        ref[i] = RefResult(
+            hit.color,
+            rayFracted.color,
+            o
+        );
+        
+        countRays++;
+
+        if ( rayFracted.hit.radius <= 0.0 || 
+            rayFracted.hit.reflective <= 0.0 ) {
+            break;
+        } 
+        hit = rayFracted;
     }
 
     for (int i = countRays-1; i >= 0; i--) {
@@ -269,9 +327,13 @@ void main()
     RayHitResult ray = traceRay(camera.position, direction, t_min, t_max);
     colorAcc = ray.color;
 
-    if ( ray.hit.reflective > 0.0 ) {
-        colorAcc = calculateReflection(ray, t_min, t_max);
+    if ( ray.hit.opacity > 0.0 ) {
+        colorAcc = calculateRefraction(ray, direction, t_min, t_max);
     }
+
+    // if ( ray.hit.reflective > 0.0 ) {
+    //     colorAcc = calculateReflection(ray, t_min, t_max);
+    // }
 
     finalColor = vec4(colorAcc, 1.0);
 }
