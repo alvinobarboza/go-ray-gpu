@@ -13,7 +13,7 @@ const MaxBounces = int32(6)
 func main() {
 	maxBounces := int32(3)
 
-	screenWidth := int32(1600)
+	screenWidth := int32(1000)
 	screenHeight := int32(1000)
 
 	moveSpeed := float32(4)
