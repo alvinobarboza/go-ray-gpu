@@ -281,7 +281,9 @@ vec3 calculateRefraction( RayHitResult hit, vec3 ray, float t_min, float t_max )
     vec3 colorAcc = vec3(0.0);
     RefResult ref[MAX_BOUNCES];
     int countRays = 0; // Since array is initialized early, don't overshoot on less bounces
+    
     for ( int i = 0; i < maxBounces; i++ ){
+        ray = normalize(ray);
         float o = hit.hit.opacity;
         float angleRay = rayAngleFromNormal(ray, hit.normal);
 		vec3 refracted = refractRay(ray, hit.normal, angleRay, hit.hit.refractionIndex);
@@ -302,6 +304,7 @@ vec3 calculateRefraction( RayHitResult hit, vec3 ray, float t_min, float t_max )
             break;
         } 
         hit = rayFracted;
+        ray = refracted;
     }
 
     for (int i = countRays-1; i >= 0; i--) {
