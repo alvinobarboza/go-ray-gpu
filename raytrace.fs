@@ -181,7 +181,7 @@ float computeLight( vec3 point, vec3 normal, vec3 objToCam, int specular  )
 
 // Find angle between two vectors
 // angle = acos(angle) = (u dot v) / (length u * length v)
-float rayAngleFromNormal( vec3 ray, vec3 normal)
+float rayAngleFromNormal( vec3 ray, vec3 normal )
 {
     float r_dot_n = dot(ray, normal);
     float lenRay = length(ray);
@@ -251,6 +251,12 @@ vec3 calculateReflection( RayHitResult ray, float t_min, float t_max )
         RayHitResult rayFlected = traceRay(
             ray.point, reflected, 0.001, t_max);
 
+        // TODO : Find a away to calculate inner refraction
+        // without recursion and messy code
+        // if (rayFlected.hit.opacity > 0.0) {
+        //     rayFlected.color = calculateRefraction(rayFlected, reflected, t_min, t_max);
+        // }
+
         ref[i] = RefResult(
             ray.color,
             rayFlected.color,
@@ -291,6 +297,10 @@ vec3 calculateRefraction( RayHitResult hit, vec3 ray, float t_min, float t_max )
         RayHitResult rayFracted = traceRay(
             hit.point, refracted, 0.001, t_max);
 
+        if (rayFracted.hit.reflective > 0.0) {
+            rayFracted.color = calculateReflection(rayFracted, t_min, t_max);
+        }
+
         ref[i] = RefResult(
             hit.color,
             rayFracted.color,
@@ -300,7 +310,7 @@ vec3 calculateRefraction( RayHitResult hit, vec3 ray, float t_min, float t_max )
         countRays++;
 
         if ( rayFracted.hit.radius <= 0.0 || 
-            rayFracted.hit.reflective <= 0.0 ) {
+            rayFracted.hit.opacity <= 0.0 ) {
             break;
         } 
         hit = rayFracted;
